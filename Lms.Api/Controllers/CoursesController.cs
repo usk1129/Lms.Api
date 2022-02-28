@@ -26,7 +26,8 @@ namespace Lms.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Course>>> GetCourse()
         {
-            return await _context.Course.ToListAsync();
+            var modules = await _context.Course.Include(t => t.Modules).ToListAsync();
+            return  modules;
         }
 
         // GET: api/Courses/5
