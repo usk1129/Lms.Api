@@ -18,19 +18,21 @@ namespace Lms.Api.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly LmsDataContext _context;
-
-        public CoursesController(LmsDataContext context)
+        private readonly IMapper _mapper;
+        public CoursesController(LmsDataContext context,IMapper _mapper)
         {
             _context = context;
+            this._mapper = _mapper;
 
         }
 
         // GET: api/Courses
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Course>>> GetCourse()
+        public async Task<ActionResult<IEnumerable<CourseDto>>> GetCourse()
         {
             var modules = await _context.Course.Include(t => t.Modules).ToListAsync();
-            return  modules;
+            var courseDto = _mapper.Map<IEnumerable<CourseDto>>(modules);
+            return  Ok(courseDto);
         }
 
         // GET: api/Courses/5

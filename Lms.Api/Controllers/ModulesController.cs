@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Lms.Data.Data;
 using Lms.core.Entities;
+using AutoMapper;
+using Lms.core.Lms.Core.Dto;
 
 namespace Lms.Api.Controllers
 {
@@ -16,17 +18,20 @@ namespace Lms.Api.Controllers
     public class ModulesController : ControllerBase
     {
         private readonly LmsDataContext _context;
+        private readonly IMapper mapper;
 
-        public ModulesController(LmsDataContext context)
+        public ModulesController(LmsDataContext context,IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
         }
 
         // GET: api/Modules
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Module>>> GetModule()
+        public async Task<ActionResult<IEnumerable<ModuleDto>>> GetModule()
         {
-            return await _context.Module.ToListAsync();
+            var moduleDto = mapper.ProjectTo<ModuleDto>(_context.Module);
+            return await moduleDto.ToListAsync();
         }
 
         // GET: api/Modules/5
