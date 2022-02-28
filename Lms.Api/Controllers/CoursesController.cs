@@ -18,11 +18,11 @@ namespace Lms.Api.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly LmsDataContext _context;
-        private readonly IMapper mapper;
-        public CoursesController(LmsDataContext context, IMapper mapper)
+
+        public CoursesController(LmsDataContext context)
         {
             _context = context;
-            this.mapper = mapper;
+
         }
 
         // GET: api/Courses
@@ -33,12 +33,6 @@ namespace Lms.Api.Controllers
             return  modules;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<CourseDto>>> GetCourseDto()
-        {
-            var courseDto = mapper.ProjectTo<CourseDto>(_context.Course);
-            return Ok(await courseDto.ToListAsync());
-        }
         // GET: api/Courses/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Course>> GetCourse(int id)
@@ -50,9 +44,8 @@ namespace Lms.Api.Controllers
                 return NotFound();
             }
 
-            var courseDto = mapper.Map<CourseDto>(course);
 
-            return Ok(courseDto);
+            return course;
         }
 
         // PUT: api/Courses/5
