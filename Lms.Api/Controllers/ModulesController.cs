@@ -10,6 +10,7 @@ using Lms.Data.Data;
 using Lms.core.Entities;
 using AutoMapper;
 using Lms.core.Lms.Core.Dto;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace Lms.Api.Controllers
 {
@@ -20,7 +21,7 @@ namespace Lms.Api.Controllers
         private readonly LmsDataContext _context;
         private readonly IMapper mapper;
 
-        public ModulesController(LmsDataContext context,IMapper mapper)
+        public ModulesController(LmsDataContext context, IMapper mapper)
         {
             _context = context;
             this.mapper = mapper;
@@ -72,7 +73,7 @@ namespace Lms.Api.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500);
                 }
             }
 
@@ -89,6 +90,7 @@ namespace Lms.Api.Controllers
 
             return CreatedAtAction("GetModule", new { id = @module.Id }, @module);
         }
+
 
         // DELETE: api/Modules/5
         [HttpDelete("{id}")]
@@ -109,6 +111,27 @@ namespace Lms.Api.Controllers
         private bool ModuleExists(int id)
         {
             return _context.Module.Any(e => e.Id == id);
+        }
+        [HttpPatch("{moduleId}")]
+        public async Task<ActionResult<CourseDto>> PatchModule(int moduleId, JsonPatchDocument<ModuleDto> patchDocument)
+        {
+
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var dto = new ModuleDto();
+            patchDocument.ApplyTo(dto);
+            var entity = await _context.Module.FirstOrDefaultAsync(c => c.Id == moduleId);
+
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            var patchEntity = mapper.Map<JsonPatchDocument<Module>>(patchDocument);
+            patchEntity.ApplyTo(entity, ModelState);
+            await _context.SaveChangesAsync();
+
+            return Ok(entity);
         }
     }
 }

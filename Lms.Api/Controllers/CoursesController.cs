@@ -10,6 +10,7 @@ using Lms.Data.Data;
 using Lms.core.Entities;
 using Lms.core.Lms.Core.Dto;
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace Lms.Api.Controllers
 {
@@ -74,7 +75,7 @@ namespace Lms.Api.Controllers
                 }
                 else
                 {
-                    throw;
+                    return StatusCode(500);
                 }
             }
 
@@ -108,9 +109,36 @@ namespace Lms.Api.Controllers
             return NoContent();
         }
 
+
+
         private bool CourseExists(int id)
         {
             return _context.Course.Any(e => e.Id == id);
+        }
+        [HttpPatch("{courseId}")]
+        public async Task<ActionResult<CourseDto>> PatchCourse(int courseId, JsonPatchDocument<CourseDto> patchDocument)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var entity = await _context.Course.FirstOrDefaultAsync(c => c.Id == courseId);
+
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            var patchEntity = _mapper.Map<JsonPatchDocument<Course>>(patchDocument);
+            patchEntity.ApplyTo(entity, ModelState);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
+
+            return Ok(entity);
         }
     }
 }
